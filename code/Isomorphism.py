@@ -1,3 +1,5 @@
+import math
+
 import networkx
 
 from ParseRules import ParseRule, Rule, Atom
@@ -20,7 +22,6 @@ def get_universal_node_id_mapping(rules_list):
     for current_rule_list in rules_list:
         for rule in current_rule_list:
             variables = rule.get_variables()
-
 
             for variable in variables:
                 if variable not in inner_universal_node_ids:
@@ -246,9 +247,9 @@ def aggregate_score(base_rule_bucket, augment_rule_bucket, networkx_to_rule_mapp
                         selec_base = my_rule.selectivity
                         selec_augment = augment_actual.selectivity
                         rule_matches.append([my_rule, augment_actual])
-                        hc_score = (hc_augment - hc_base)
-                        pca_score = (pca_augment - pca_base)
-                        selec_score = (selec_augment - selec_base)
+                        hc_score = hc_augment - hc_base
+                        pca_score = pca_augment - pca_base
+                        selec_score = selec_augment - selec_base
 
                         score = Score(hc_score, pca_score, selec_score)
                         rule_found_flag = True
@@ -258,7 +259,8 @@ def aggregate_score(base_rule_bucket, augment_rule_bucket, networkx_to_rule_mapp
                     score_by_key[key].append(score)
                     match_by_key[key] = True
                 else:
-                    score = Score(-my_rule.head_coverage, -my_rule.pca_confidence, -my_rule.selectivity)
+                    score = Score(-my_rule.head_coverage, -my_rule.pca_confidence,
+                                  -my_rule.selectivity)
                     score_by_key[key].append(score)
 
     aggregator_dict = {}
@@ -266,7 +268,7 @@ def aggregate_score(base_rule_bucket, augment_rule_bucket, networkx_to_rule_mapp
     for key in base_rule_bucket:
         agg_score = Score(0.0, 0.0, 0.0)
 
-        if key not in score_by_key == 0 or match_by_key[key] == False:
+        if not match_by_key[key]:
             aggregator_dict[key] = Score(-1.0, -1.0, -1.0)
         else:
             for score_object in score_by_key[key]:
@@ -407,24 +409,26 @@ def get_results(model_name, dataset_name, mat_type, relations):
                                                             networkx_to_rule_mapping=networkx_to_rule_mapping)
     write_aggregated_score(dataset_name=dataset_name, model_name=model_name, mat_type=mat_type,
                            folder_to_write=folder_to_write, agg_score=agg_score_by_type, bucket=base_bucket_type,
-                           networkx_to_rule_mapping=networkx_to_rule_mapping, additional="new_type")
+                           networkx_to_rule_mapping=networkx_to_rule_mapping, additional="mse_type")
     write_rule_matches(dataset_name=dataset_name, model_name=model_name, mat_type=mat_type,
-                       folder_to_write=folder_to_write, rule_matches=rule_match_by_type, additional="new_type")
+                       folder_to_write=folder_to_write, rule_matches=rule_match_by_type, additional="mse_type")
 
     base_bucket_head = create_bucket_by_head(bucket=base_bucket_type, networkx_to_rule_mapping=networkx_to_rule_mapping)
-    augment_bucket_head = create_bucket_by_head(bucket=augment_bucket_type, networkx_to_rule_mapping=networkx_to_rule_mapping)
+    augment_bucket_head = create_bucket_by_head(bucket=augment_bucket_type,
+                                                networkx_to_rule_mapping=networkx_to_rule_mapping)
     agg_score_by_head, rule_match_by_head = aggregate_score(base_rule_bucket=base_bucket_head,
                                                             augment_rule_bucket=augment_bucket_head,
                                                             networkx_to_rule_mapping=networkx_to_rule_mapping)
     write_aggregated_score(dataset_name=dataset_name, model_name=model_name, mat_type=mat_type,
                            folder_to_write=folder_to_write, agg_score=agg_score_by_head, bucket=base_bucket_head,
-                           networkx_to_rule_mapping=networkx_to_rule_mapping, additional="new_head", relations=relations)
+                           networkx_to_rule_mapping=networkx_to_rule_mapping, additional="mse_head",
+                           relations=relations)
     write_rule_matches(dataset_name=dataset_name, model_name=model_name, mat_type=mat_type,
-                       folder_to_write=folder_to_write, rule_matches=rule_match_by_head, additional="new_head")
+                       folder_to_write=folder_to_write, rule_matches=rule_match_by_head, additional="mse_head")
 
 
 if __name__ == "__main__":
-    model_name = "TransE"
+    model_name = "ComplEx"
     dataset_name = "WN18"
     mat_type = "Materialized"
     n_relations = 18

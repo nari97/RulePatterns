@@ -83,7 +83,7 @@ def get_matching_nwx_graph(current_nwx_graph, candidates):
     return matching_nwx_graph
 
 
-def write_file_for_type(results, folder_to_write, dataset_name):
+def write_file_for_type(results, folder_to_write, dataset_name, additional):
     """
         Write results to file
 
@@ -91,7 +91,7 @@ def write_file_for_type(results, folder_to_write, dataset_name):
             results (Dict): Dictionary containing results
     """
 
-    f = open(f"{folder_to_write}{dataset_name.lower()}_type_compared.csv", "w+")
+    f = open(f"{folder_to_write}{dataset_name.lower()}_{additional}type_compared.csv", "w+")
     columns = results[list(results.keys())[0]]
 
     for type_key in results:
@@ -107,7 +107,7 @@ def write_file_for_type(results, folder_to_write, dataset_name):
     f.close()
 
 
-def match_type_files(files, folder_to_write, dataset_name):
+def match_type_files(files, folder_to_write, dataset_name, additional=""):
     """
         Takes list of files as input and prints rule in latex form based on matching by type of rule
     """
@@ -145,9 +145,9 @@ def match_type_files(files, folder_to_write, dataset_name):
             results[current_rule][model_name] = []
             matching_nwx_graph = get_matching_nwx_graph(current_nwx_graph, nwx_graph_by_file_name[file_name])
 
-            hc = -2.0
-            pca = -2.0
-            selec = -2.0
+            hc = 2.0
+            pca = 2.0
+            selec = 2.0
 
             if matching_nwx_graph is not None:
                 rule = nwx_mapping[matching_nwx_graph]
@@ -157,12 +157,12 @@ def match_type_files(files, folder_to_write, dataset_name):
 
             results[current_rule][model_name].extend([hc, pca, selec])
 
-    write_file_for_type(results, folder_to_write, dataset_name)
+    write_file_for_type(results, folder_to_write, dataset_name, additional)
 
 
 if __name__ == "__main__":
     folder_to_write = "D:\PhD\Work\EmbeddingInterpretibility\RulePatterns\data\Experiments\Tables\\"
     match_type_files([
-                         "D:\PhD\Work\EmbeddingInterpretibility\RulePatterns\data\Experiments\Results\Materialized\WN18\ComplEx\wn18_complex_materialized_new_type.csv",
-                         "D:\PhD\Work\EmbeddingInterpretibility\RulePatterns\data\Experiments\Results\Materialized\WN18\TransE\wn18_transe_materialized_new_type.csv"],
-                     folder_to_write, dataset_name="WN18")
+                         "D:\PhD\Work\EmbeddingInterpretibility\RulePatterns\data\Experiments\Results\Materialized\WN18\ComplEx\wn18_complex_materialized_mse_type.csv",
+                         "D:\PhD\Work\EmbeddingInterpretibility\RulePatterns\data\Experiments\Results\Materialized\WN18\TransE\wn18_transe_materialized_mse_type.csv"],
+                     folder_to_write, dataset_name="WN18", additional="mse")
